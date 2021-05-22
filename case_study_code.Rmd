@@ -1,7 +1,7 @@
 ---
 title: "Likelihood of Violence at Protests"
 author: "Peter L'Oiseau"
-date: "5/12/2021"
+date: "5/22/2021"
 output: 
   html_document:
     toc: true
@@ -10,7 +10,7 @@ output:
 
 ## Motivation
 
-##### The Mass Mobilization Project has put together a data set spanning the last three decades documenting protests from around the world. More can be read about the project and its funding (1), but the goal of the project is to understand more about citizens' movements against their governments across the world and how those governments respond. Collecting more information about why citizens demonstrate against their governments, how they demonstrate and how governments respond will allow us to systematically assess the political priorities of citizenries around world. And ideally with these assessments governments can formulate advice on how to mitigate tension and violence and create a path to a more harmonious relationship between people and government. 
+##### The Mass Mobilization Project has put together a data set spanning the last three decades documenting protests from around the world. More can be read about the project and its funding (1), but the goal of the project is to understand more about citizens' movements against their governments across the world and how those governments respond. Collecting more information about why citizens demonstrate against their governments, how they demonstrate and how governments respond will allow us to systematically assess the political priorities of citizenries around the world. And ideally with these assessments, governments can formulate advice on how to mitigate tension and violence and create a path to a more harmonious relationship between people and government. 
 
 ##### The data has been made open source for researchers to provide more insight into the power that the data holds. It contains information about the location, time, length, purpose, size and certain outcomes of the protest. In this study, I will examine the outcome of violence occurring at a protest. Violence in this study includes beatings, killings and shootings but does not include crowd dispersion tactics or arrests being made. There are distinctions made about whether violence comes from the protesters or the state in response to the protest which is relevant information included in the data but is considered out of scope for this study. In order to predict the likelihood of violence occurring at a protest, we consider where and when the protest took place, what the protesters were demanding, how long the protest was, how many people attended, and how many protests occurred in that country that year. The models used then allow us to understand what countries and regions are more likely to see their protests lead to violence and what other factors contribute to a socially conscious action resulting in violence.
 
@@ -53,14 +53,13 @@ kable(head(
     year,
     region,
     protestnumber,
-    location,
     protesterviolence,
     participants,
     protesteridentity,
     protesterdemand1,
     stateresponse1
   )
-), caption = "Select Variables from the Data Set") %>% kable_styling('striped')
+), caption = "Select Variables from the Data Set") %>% kable_styling('striped',full_width = F)
 
 ```
 
@@ -73,19 +72,19 @@ kable(head(
 ##### In order to determine which model is the best for understanding the data, I need to first layout an objective criteria which the models will be measured by. Since we have a binary classification problem there are many performance metrics already derived in the literature which we can rely on to grade our models.
 
 ### Area Under Curve (AUC) of the Receiver Operatering Characteristic (ROC):
-##### This will be our primary metric for determining the efficacy of a model. The ROC is the curve which is defined by varying the cut off point for where one classifies all below predictions as 0 and all above predictions as 1. On the x-axis of the curve is the false positive rate or the percentage of predictions which were labeled false given the threshold when they were actually true and on the y-axis is the recall or the number of predictions labeled true when the actually were divided by the total number of actually true events. After finding this curve for a range of cut off points from 0 to 1, one then calculates the area under the curve. This AUC can range from 0 to 1 but an entirely random predictor would score on average .5 in this metric where 1 is the best score.
+##### This will be our primary metric for determining the efficacy of a model. The ROC is the curve which is defined by varying the cut off point for where one classifies all below predictions as 0 and all above predictions as 1. On the x-axis of the curve is the false positive rate or the percentage of predictions which were labeled false given the threshold when they were actually true, and on the y-axis is the recall or the number of predictions labeled true when the actually were divided by the total number of actually true events. After finding this curve for a range of cut off points from 0 to 1, one then calculates the area under the curve. This AUC can range from 0 to 1 but an entirely random predictor would score on average .5 in this metric where 1 is the best score.
 
 ### Accuracy
 ##### Accuracy is simply the number of correct predictions a model made divided by the number of predictions made. This metric can be skewed when there is a large class imbalance between the two outcomes in the data set. However, this data set sees 30.6% of the protests scored as violent which is not an unacceptable level imbalance for relying on accuracy as a metric.
 
 ### F1
-##### F1 score is metric which balances the precision and recall of a model. Recall is the number of predictions labeled true by the model when the actually were divided by the total number of actually true events, while precision is the number of correctly predicted true events divided by the total number of predicted true events. F1 then is calculated by 2 * (recall * precision)/(recall + precision) which acts as a harmonic mean of recall and precision, two valuable metrics for understanding model performance.
+##### F1 score is a metric which balances the precision and recall of a model. Recall is the number of predictions labeled true by the model when they actually were, divided by the total number of actually true events, while precision is the number of correctly predicted true events divided by the total number of predicted true events. F1 then is calculated by 2 * (recall * precision)/(recall + precision) which acts as a harmonic mean of recall and precision, two valuable metrics for understanding model performance.
 
 ## Exploratory Data Analysis
 
-##### This section will explore the data, the relationships and distributions that lie within and investigate any data errors. You can read more about the data set and its variables [here](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/HTTWYL/TJJZNG&version=5.0).
+##### This section will explore the data, the relationships and distributions that lie within and investigate any data errors. You can read more about the data set and its variables [here.](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/HTTWYL/TJJZNG&version=5.0)
 
-##### First we explore the 4 protest demand columns to see what the distribution of demands is from the protesters.
+##### First we explore the 4 protest demand columns to see what the distribution of demands is from the protesters. Below is the frequency of the categories of protester demands.
 
 ```{r , data manipulation 1, warning=FALSE,message=FALSE}
 #get protest length
@@ -179,7 +178,7 @@ protests %>% gather(demand_num,
                                         col.names = c('Number of Demands', 'Frequency')) %>% kable_styling('striped')
 ```
 
-##### In light of this variable number of protest demands, I've decided to include the number of demands as a variable in the data and collapse the demands into one column with the seven categories, and have a row for each demand of a protest. Note that this will then result in having multiple predictions for the same protest based on their distinct demands. These predictions will be averaged and used to create a single prediction for each protest. Now we look at the distribution of state responses to these protests.
+##### In light of this variable number of protest demands, I've decided to include the number of demands as a variable in the data and collapse the demands into one column with the seven categories, and have a row for each demand of a protest. Note that this will then result in having multiple predictions for the same protest based on their distinct demands. These predictions will be averaged and used to create a single prediction for each protest. Now we look at the distribution of state responses to these protests. This is the frequency of state response to protests.
 
 ```{r , data manipulation 3, warning=FALSE,message=FALSE}
 
@@ -301,7 +300,6 @@ fin_protests <-
 
 kable(tail(
   fin_protests %>% select(
-    id,
     country,
     year,
     region,
@@ -408,9 +406,9 @@ kable(tail(tidy(log_model),25),digits=3)%>%kable_styling('striped')
 
 ## Model Development
 
-##### To begin, let's examine the models that will be considered in this study. We will investigate the utility of logistic regression and compare it to a variety of mixed effect models. First, logistic regression is a classic binary classification model which draws a straight line through the n-dimensional parameter space to try to create the most homogeneous within binary classes with respect to the response variable. This method is not overly complicated but will offer a good baseline of performance and allows us to interpret the parameter estimates for useful recommendations. I will then examine the advantages and drawbacks of a mixed effects model which instead of treating all independent variables as something with a fixed effect on the response variable, we treat certain hierarchical categories as random effects. To treat a variable as a random effect means the acknowledgment that the effect is variable with respect to our response variable. In this case, there are hierarchical categories, country and region which can be treated as random effects instead of fixed ones. This allows the model to pool information across a country or region which reflects the geopolitical reality that protests and other social behavior do not occur in a vacuum but rather spread as people react to others who they see most frequently. I will test three distinct mixed effects models, one which merely uses country and region as random effects, one where these two effects are assumed to be correlated with the year variable and one where they are assumed to be uncorrelated with the year variable. By including the year variable, the model's output for a country's effect of violence at a protest can vary over time
+##### To begin, let's examine the models that will be considered in this study. We will investigate the utility of logistic regression and compare it to a variety of mixed effect models. First, logistic regression is a classic binary classification model which draws a straight line through the n-dimensional parameter space to try to create the most homogeneous within binary classes with respect to the response variable. This method is not overly complicated but will offer a good baseline of performance and allows us to interpret the parameter estimates for useful recommendations. I will then examine the advantages and drawbacks of a mixed effects model which instead of treating all independent variables as something with a fixed effect on the response variable, we treat certain hierarchical categories as random effects. To treat a variable as a random effect means the acknowledgment that the effect is variable with respect to our response variable. In this case, there are hierarchical categories, country and region, which can be treated as random effects instead of fixed ones. This allows the model to pool information across a country or region which reflects the geopolitical reality that protests and other social behavior do not occur in a vacuum but rather spread as people react to others who they see most frequently. I will test three distinct mixed effects models, one which merely uses country and region as random effects, one where these two effects are assumed to be correlated with the year variable and one where they are assumed to be uncorrelated with the year variable. By including the year variable, the model's output for a country's effect of violence at a protest can vary over time.
 
-##### Next, I will separate 75 percent of the observations at random into the training set and the remainder of the data into a test set. I then further split the training set into train and validation sets and repeat that random splitting procedure 4 more times in order to perform 5 fold cross-validation. Each of four models are then trained on all 5 of the training sets separately and then tested on the corresponding validation set. The average across the 5 folds of each model's performance on new data in ROC AUC, accuracy and F1 are then compared below
+##### Next, I will separate 75 percent of the observations at random into the training set and the remainder of the data into a test set. I then further split the training set into train and validation sets and repeat that random splitting procedure 4 more times in order to perform 5 fold cross-validation. Each of four models are then trained on all 5 of the training sets separately and then tested on the corresponding validation set. The average across the 5 folds of each model's performance on new data in ROC AUC, accuracy and F1 are then compared below.
 
 ```{r , model development, warning=FALSE,message=FALSE}
 #set seed for reproducibility
@@ -638,7 +636,7 @@ kable(
 
 ##### Having seen the results of this mixed effects model, one should be confident that when and where a protest occurred can help to predict whether or not a protest is likely to be violent either from the protester side, state side or both. We also see that the longer a protest goes on and the more demands a group is calling for increases the likelihood of violence. The size of the protest is also relevant but the scattered reports for this variable made it difficult to determine the relationship with protest violence, however it appears small crowds below 100 people are significantly less likely to be violent. Protester demands are also important to know when predicting violence as some protests over topics like police brutality are more likely to see violence occur than a protest over social restrictions. 
 
-##### Lastly, let's examine the importance of the random effects of country and region. These are interesting because they suggest that the effect of a region or country are not fixed and can change especially in relation to time. So, there are differences between protest violence in different countries and regions but they do change and ideally this would mean that they can be changed by human intervention. I.e. there's nothing inherent and immutable in the African region land mass that makes it more likely to see protest violence or Cuba less likely. I think an important next step to understanding what governments can do to facilitate a more peaceful culture of protest in their countries is to investigate what social, political and cultural variables can explain the random variation in the effect a country or region has on protest violence. For example, a researcher could investigate whether Gross Domestic Product (GDP) per capita or government structure of a country is useful in describing the variation in the country effect. If we can understand more about the underlying factors about a country or region which makes it more susceptible to protest violence, then it becomes easier to make effective recommendations on how the violence can be curtailed. Additionally, based on this study, we can say that protesters which are making multiple demands, are willing to protest multiple days and weeks and are assembled in larger numbers are more likely to have violent protests. This knowledge can be used to triage more resources to protests which are at higher risk of becoming violent. Those resources could be police forces, diplomats, social workers or other government officials but more research should be done to understand how a government can effectively reduce the likelihood of violence at ones which are known to be high risk for that outcome.
+##### Lastly, let's examine the importance of the random effects of country and region. These are interesting because they suggest that the effect of a region or country are not fixed and can change especially in relation to time. So, there are differences between protest violence in different countries and regions but they do change, and ideally this would mean that they can be changed by human intervention. I.e. there's nothing inherent and immutable in the African region land mass that makes it more likely to see protest violence or Cuba less likely. I think an important next step to understanding what governments can do to facilitate a more peaceful culture of protest in their countries is to investigate what social, political and cultural variables can explain the random variation in the effect a country or region has on protest violence. For example, a researcher could investigate whether Gross Domestic Product (GDP) per capita or government structure of a country is useful in describing the variation in the country effect. If we can understand more about the underlying factors about a country or region which makes it more susceptible to protest violence, then it becomes easier to make effective recommendations on how the violence can be curtailed. Additionally, based on this study, we can say that protesters which are making multiple demands, are willing to protest multiple days and weeks and are assembled in larger numbers are more likely to have violent protests. This knowledge can be used to triage more resources to protests which are at a higher risk of becoming violent. Those resources could be police forces, diplomats, social workers or other government officials but more research should be done to understand how a government can effectively reduce the likelihood of violence at ones which are known to be high risk for that outcome.
 
 ## References
 ##### (1)
