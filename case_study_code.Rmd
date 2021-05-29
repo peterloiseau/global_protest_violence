@@ -570,9 +570,9 @@ perf_df <- data.frame(
   ),
   Accuracy = accuracy(predictions, actual),
   F1 = 2 * (
-    caret::recall(predictions, actual) * caret::precision(predictions, actual)
+    caret::recall(predictions, actual, relevant = 'TRUE') * caret::precision(predictions, actual, relevant = 'TRUE')
   ) / (
-    caret::recall(predictions, actual) + caret::precision(predictions, actual)
+    caret::recall(predictions, actual, relevant = 'TRUE') + caret::precision(predictions, actual, relevant = 'TRUE')
   )
 )
 
